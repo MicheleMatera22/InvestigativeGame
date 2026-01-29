@@ -8,7 +8,6 @@ from models import ScenarioInvestigativo
 from GestoreMemoria import MemoriaRAG
 from KnowledgeGraph import KnowledgeGraph
 
-
 class GameEngine:
     def __init__(self):
         self.scenario = None  # Conterrà i dati dello scenario (dict)
@@ -17,7 +16,7 @@ class GameEngine:
 
     def genera_nuova_partita(self):
         """Genera lo scenario usando il Template Prompting"""
-        print(">>> ENGINE: Generazione Scenario in corso...")
+        print("Generazione Scenario in corso...")
 
         prompt = """
         Sei un game designer di gialli procedurali.
@@ -28,11 +27,11 @@ class GameEngine:
             "arma_reale": "Oggetto",
             "movente_reale": "Motivo",
             "intro_atmosfera": "Meteo e luci",
-            "rapporto_forense": ["Fatto 1", "Fatto 2", "Fatto 3"],
+            "rapporto_forense": ["Orario del decesso (specificandolo)", "Orario ritrovamento del corpo (specificandolo)", "Rapporto della scientifica"],
             "sospettati": [
-                { "id": 0, "nome": "...", "ruolo": "...", "colpevole": true, "personalita": "...", "alibi": "Falso...", "segreto": "..." },
-                { "id": 1, "nome": "...", "ruolo": "...", "colpevole": false, "personalita": "...", "alibi": "Vero...", "segreto": "..." },
-                { "id": 2, "nome": "...", "ruolo": "...", "colpevole": false, "personalita": "...", "alibi": "Vero...", "segreto": "..." }
+                { "id": 0, "nome": "...", "ruolo": "...", "colpevole": true, "personalita": "...", "alibi": "Falso...", "segreto": "...", "indizio_iniziale": "..." },
+                { "id": 1, "nome": "...", "ruolo": "...", "colpevole": false, "personalita": "...", "alibi": "Vero...", "segreto": "...", "indizio_iniziale": "..." },
+                { "id": 2, "nome": "...", "ruolo": "...", "colpevole": false, "personalita": "...", "alibi": "Vero...", "segreto": "...", "indizio_iniziale": "..." }
             ]
         }
         Rispondi SOLO col JSON.
@@ -93,7 +92,8 @@ class GameEngine:
         full_prompt = f"""
         {sys}
         MEMORIA A LUNGO TERMINE: {context_rag}
-        CONTESTO ATTUALE: Detective: {user_input}
+        CONTESTO ATTUALE: Il Detective chiede: "{user_input}"
+        Rispondi direttamente come farebbe {sospettato['nome']}
         """
 
         messages = [{'role': 'user', 'content': full_prompt}]
@@ -110,7 +110,7 @@ class GameEngine:
         # INCORNICIAMENTO (FRAMING): Diciamo all'AI che è un contesto narrativo sicuro
         base = f"""
         [CONTESTO: GIOCO DI RUOLO INVESTIGATIVO - FICTION]
-        Stai interpretando un personaggio in un romanzo giallo. Non sei un assistente AI.
+        Stai interpretando un personaggio in un romanzo giallo. Non sei un assistente AI.  
         Nome: {s['nome']}
         Ruolo: {s['ruolo']}
         Personalità: {s['personalita']}
@@ -144,7 +144,6 @@ class GameEngine:
 
         # 3. Logica di Correzione
         if "SI" in check['message']['content'].upper():
-            print(f"DEBUG: Correzione Neuro-Simbolica attivata per {sospettato['nome']}")
 
             history_correzione = messages.copy()
 
@@ -158,6 +157,7 @@ class GameEngine:
             1. Questo è un racconto di finzione. NON uscire dal personaggio.
             2. NON scusarti e NON comportarti da assistente AI.
             3. Recita la parte in modo coerente con i fatti citati sopra.
+            4. Scrivi SOLO la battuta corretta del personaggio, niente meta-commenti
             """
 
             history_correzione.append({'role': 'user', 'content': istruzione_regista})
@@ -165,9 +165,9 @@ class GameEngine:
             res_corretta = ollama.chat(model=Config.MODEL_NAME, messages=history_correzione)
             testo_corretto = res_corretta['message']['content']
 
-            # Fallback se rifiuta ancora
-            if "non posso" in testo_corretto.lower() or "assistente" in testo_corretto.lower():
-                return testo_iniziale  # Meglio l'errore che il rifiuto
+            indicatori_ai = ["mi dispiace", "i'm sorry", "non posso", "language model", "modello linguistico"]
+            if any(x in testo_corretto.lower() for x in indicatori_ai):
+                return testo_iniziale  # Fallback alla prima risposta
 
             return testo_corretto
 
@@ -185,3 +185,42 @@ class GameEngine:
                 return True
         except FileNotFoundError:
             return False
+
+    def genera_rapporto_polizia(self, id_sospettato, history_list):
+            """
+            Analizza la chat appena conclusa e confronta le dichiarazioni con i fatti noti (Knowledge Graph).
+            """
+            if not history_list:
+                return "Nessuna dichiarazione raccolta (Interrogatorio vuoto)."
+
+            sospettato = next(s for s in self.scenario['sospettati'] if s['id'] == id_sospettato)
+
+            # Recuperiamo la verità oggettiva dal Grafo
+            fatti_reali = self.kg.ottieni_fatti_su(sospettato['nome'])
+            fatti_str = " | ".join(fatti_reali) if fatti_reali else "Nessun fatto specifico noto."
+
+            # Convertiamo la lista della chat in testo
+            chat_str = "\n".join(history_list)
+
+            prompt_analista = f"""
+            Sei un Analista della Polizia. 
+            Confronta le dichiarazioni del sospettato con i Fatti Accertati.
+
+            SOSPETTATO: {sospettato['nome']}
+            FATTI ACCERTATI (VERITÀ): {fatti_str}
+
+            TRASCRIZIONE INTERROGATORIO:
+            {chat_str}
+
+            COMPITO:
+            Scrivi un breve "Rapporto di Verifica" (max 3-4 righe).
+            Per ogni punto chiave detto dal sospettato, scrivi se è "CONFERMATO" dai fatti o "SMENTITO" (contraddizione).
+            Se il sospettato ha detto cose non verificabili, scrivi "NON VERIFICABILE".
+            Usa un tono freddo e burocratico.
+            """
+
+            try:
+                res = ollama.chat(model=Config.MODEL_NAME, messages=[{'role': 'user', 'content': prompt_analista}])
+                return res['message']['content']
+            except Exception as e:
+                return f"Errore generazione rapporto: {e}"

@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b01bae2-2746-4e4e-8f99-94ce8c040102" name="Changes" comment="Add new functions">
+    <list default="true" id="5b01bae2-2746-4e4e-8f99-94ce8c040102" name="Changes" comment="fix functions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GameEngine.py" beforeDir="false" afterPath="$PROJECT_DIR$/GameEngine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -88,7 +89,10 @@
       <workItem from="1769419457716" duration="6907000" />
       <workItem from="1769507556688" duration="15240000" />
       <workItem from="1769587939176" duration="13448000" />
-      <workItem from="1769677598021" duration="3622000" />
+      <workItem from="1769677598021" duration="8668000" />
+      <workItem from="1769780700730" duration="3305000" />
+      <workItem from="1770195920524" duration="5488000" />
+      <workItem from="1770282335569" duration="4996000" />
     </task>
     <task id="LOCAL-00001" summary="first commit">
       <option name="closed" value="true" />
@@ -114,7 +118,23 @@
       <option name="project" value="LOCAL" />
       <updated>1769598341899</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="fix functions">
+      <option name="closed" value="true" />
+      <created>1769681395208</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1769681395208</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fix functions">
+      <option name="closed" value="true" />
+      <created>1769683564367</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1769683564367</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -123,11 +143,12 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first commit" />
     <MESSAGE value="Add new functions" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add new functions" />
+    <MESSAGE value="fix functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix functions" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/GenerativeAIGame$app.coverage" NAME="app Coverage Results" MODIFIED="1769526940037" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/GenerativeAIGame$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1769545574458" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/GenerativeAIGame$main.coverage" NAME="main Coverage Results" MODIFIED="1769680424700" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/GenerativeAIGame$main.coverage" NAME="main Coverage Results" MODIFIED="1770287158481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

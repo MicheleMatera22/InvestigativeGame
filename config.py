@@ -14,4 +14,5 @@ class Config:
     MAX_RICORDI_RAG = 2
 
     # File
-    SAVE_FILE = "salvataggio_partita.json"
+    SAVES_DIR = "salvataggi"
+    EXTENSION = ".json"

@@ -1,6 +1,7 @@
 import time
 from GameEngine import GameEngine
 
+
 def main():
     engine = GameEngine()
 
@@ -8,13 +9,39 @@ def main():
     print("2. Carica Salvataggio")
     scelta = input("> ")
 
-    # --- GESTIONE MENU INIZIALE ---
+    # --- GESTIONE MENU INIZIALE (MODIFICATO) ---
     if scelta == '2':
-        if engine.carica_partita():
-            print("Partita caricata con successo!")
-        else:
-            print("Nessun salvataggio trovato. Genero nuovo...")
+        # 1. Chiediamo all'engine la lista dei file
+        saves = engine.elenca_salvataggi()
+
+        if not saves:
+            print("\nNessun salvataggio trovato nella cartella 'salvataggi'.")
+            print("Avvio una nuova indagine automatica...")
             scelta = '1'
+        else:
+            print("\n--- SALVATAGGI DISPONIBILI ---")
+            for i, file in enumerate(saves):
+                print(f"{i + 1}. {file}")
+            print("0. Indietro / Nuova Partita")
+
+            try:
+                idx = int(input("\nScegli il numero del file > "))
+                if 1 <= idx <= len(saves):
+                    filename_scelto = saves[idx - 1]
+                    print(f"Caricamento di '{filename_scelto}'...")
+
+                    if engine.carica_partita(filename_scelto):
+                        print("Partita caricata con successo!")
+                    else:
+                        print("Errore critico nel caricamento del file.")
+                        return
+                else:
+                    # Se l'utente preme 0 o un numero sbagliato, va a nuova partita
+                    print("Scelta annullata. Avvio nuova indagine...")
+                    scelta = '1'
+            except ValueError:
+                print("Input non valido. Avvio nuova indagine...")
+                scelta = '1'
 
     if scelta == '1':
         if not engine.genera_nuova_partita():
@@ -23,7 +50,7 @@ def main():
 
     # --- INTRODUZIONE AL CASO ---
     scen = engine.scenario
-    print(f"\nCASO: {scen['vittima']} - {scen['luogo_omicidio']}")
+    print(engine.genera_intro_narrativa())
     print("RAPPORTO FORENSE INIZIALE:")
     for f in scen['rapporto_forense']:
         print(f"- {f}")
@@ -43,10 +70,16 @@ def main():
 
         inp = input("> ").upper().strip()
 
-        # --- OPZIONE SALVATAGGIO ---
+        # --- OPZIONE SALVATAGGIO (MODIFICATO) ---
         if inp == 'S':
-            engine.salva_partita()
-            print("Salvato. Arrivederci.")
+            print("\nVuoi dare un nome al salvataggio? (Lascia vuoto per data/ora automatica)")
+            nome_user = input("Nome salvataggio: ").strip()
+
+            # Passiamo il nome (o None) all'engine
+            msg = engine.salva_partita(nome_user if nome_user else None)
+
+            print(msg)  # Stampa "Partita salvata in..."
+            print("Arrivederci.")
             break
 
         # --- OPZIONE ACCUSA (FINE GIOCO) ---

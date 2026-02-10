@@ -48,3 +48,56 @@ Il flusso di un turno di gioco segue questo pipeline:
 ```bash
 git clone [https://github.com/tuo-username/neuro-symbolic-detective.git](https://github.com/tuo-username/neuro-symbolic-detective.git)
 cd neuro-symbolic-detective
+3. Installa le Dipendenze
+Bash
+pip install -r requirements.txt
+4. Setup Modelli Ollama
+Assicurati che Ollama sia aperto, poi scarica i modelli necessari dal terminale:
+
+Bash
+ollama pull llama3.2
+ollama pull nomic-embed-text
+🎮 Come Giocare
+Avvia il file principale:
+
+Bash
+python main.py
+Comandi in Gioco:
+[0-2]: Seleziona l'ID del sospettato per iniziare un interrogatorio.
+
+FINE: Termina l'interrogatorio corrente e genera un rapporto di polizia.
+
+S: Salva la partita corrente.
+
+A: Formula l'accusa finale e risolvi il caso.
+
+📂 Struttura del Progetto
+main.py: Entry point. Gestisce l'interfaccia utente (CLI) e il loop principale.
+
+GameEngine.py: Controller logico. Gestisce RAG, Grafo e chiamate LLM.
+
+KnowledgeGraph.py: Gestisce la logica simbolica (NetworkX) e la verità oggettiva.
+
+GestoreMemoria.py: Interfaccia per il database vettoriale (ChromaDB).
+
+models.py: Classi Pydantic per la validazione strutturale dei dati JSON.
+
+config.py: File di configurazione per parametri e modelli.
+
+requirements.txt: Lista delle librerie Python necessarie.
+
+🧪 Tecnologie Utilizzate
+LangChain / Ollama: Orchestrazione LLM locale.
+
+NetworkX: Modellazione a Grafi per la logica simbolica.
+
+ChromaDB: Vector Database per la memoria RAG.
+
+Pydantic: Validazione e parsing dei dati.
+
+🎓 Contatti e Crediti
+Sviluppato da [Tuo Nome] Dipartimento di Informatica, Università degli Studi di Bari Aldo Moro.
+
+Anno Accademico 2023/2024.
+
+Progetto realizzato a scopo di ricerca per tesi di laurea triennale/magistrale.

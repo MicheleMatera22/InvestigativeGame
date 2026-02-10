@@ -1,120 +1,50 @@
-# AI Detective
-> **Un sistema investigativo procedurale basato su LLM (Llama 3.2), RAG e Logic-Checking tramite Grafi.**
+# 🕵️‍♂️ Neuro-Symbolic AI Detective
+### Sistema Investigativo Procedurale con Architettura Ibrida (LLM + Knowledge Graph)
 
-## 📖 Descrizione del Progetto
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Ollama](https://img.shields.io/badge/AI-Ollama%20Local-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Thesis](https://img.shields.io/badge/Context-Bachelor%20Thesis-purple)
 
-Questo progetto è un **motore di gioco investigativo testuale** che utilizza un approccio **Ibrido Neuro-Simbolico** per generare e gestire casi di omicidio procedurali.
+> **Progetto di Tesi:** "Integrazione Neuro-Simbolica per la Coerenza Narrativa in Sistemi Investigativi Generati da LLM."
 
-A differenza dei comuni giochi basati su LLM (che soffrono di "allucinazioni" e incoerenze), questo sistema integra un **Knowledge Graph (Grafo della Conoscenza)** e un modulo **RAG (Retrieval-Augmented Generation)** per garantire che i personaggi mantengano coerenza logica, ricordino i fatti e non contraddicano la trama generata.
+## 📖 Descrizione
 
-Il sistema è progettato per dimostrare come mitigare i limiti dei **Small Language Models (SLM)** come Llama 3.2 attraverso architetture software robuste.
+Questo progetto implementa un **motore di gioco investigativo testuale** basato su un'architettura **Neuro-Simbolica**.
+L'obiettivo è risolvere il problema delle "allucinazioni" nei Large Language Models (LLM) durante la generazione di storie a lungo termine.
 
----
+Il sistema combina:
+1.  **Componente Neurale (LLM - Llama 3.2):** Per la generazione creativa di dialoghi, descrizioni e scenari.
+2.  **Componente Simbolica (Knowledge Graph - NetworkX):** Per mantenere la "Ground Truth" (Verità Oggettiva) e validare logicamente le risposte.
+3.  **Memoria RAG (ChromaDB):** Per gestire la persistenza delle informazioni a lungo termine.
 
-## 🧠 Architettura del Sistema
+## ✨ Funzionalità Chiave
 
-Il software si basa su 4 moduli principali:
+* **♾️ Generazione Procedurale:** Ogni partita crea un caso unico (Vittima, Colpevole, Movente, Indizi) usando *Template Prompting* e validazione *Pydantic*.
+* **🧠 Architettura Neuro-Simbolica:** Un sistema di "Fact-Checking" intercetta le risposte dell'NPC. Se l'NPC contraddice i fatti del Grafo, un secondo agente AI corregge la risposta in tempo reale.
+* **📚 Memoria RAG (Retrieval-Augmented Generation):** I sospettati "ricordano" ciò che è stato detto in precedenza grazie a un database vettoriale.
+* **⚡ Narrazione Dinamica (Plot Twist):** Il sistema monitora i turni di gioco e inietta proceduralmente "Colpi di Scena" (Breaking News) che modificano il Grafo e la Memoria dei personaggi in tempo reale.
+* **💾 Sistema di Salvataggio:** Gestione completa della persistenza (Salvataggio/Caricamento stato JSON).
+* **📊 Logger Sperimentale:** (Opzionale) Registra metriche di latenza e interventi del correttore logico per analisi statistiche.
 
-1.  **L'Architetto (Generative Layer):** Utilizza `Pydantic` per costringere l'LLM a generare scenari strutturati (JSON) perfettamente validi, creando vittime, luoghi, prove e sospettati unici ad ogni avvio.
-2.  **La Memoria (RAG Layer):** Utilizza `ChromaDB` per memorizzare a lungo termine i rapporti forensi e la cronologia degli interrogatori, permettendo ai sospettati di ricordare dettagli detti in precedenza.
-3.  **Il Giudice (Logic Layer):** Un modulo **Neuro-Simbolico** basato su `NetworkX`. Ogni volta che un sospettato risponde, il sistema verifica "silenziosamente" la risposta contro il Grafo dei Fatti. Se l'AI allucina (es. sbaglia un alibi), il sistema la corregge automaticamente prima di mostrare l'output all'utente.
-4.  **L'Attore (Roleplay Layer):** Un sistema di prompt engineering avanzato ("Framing") che permette ai modelli di interpretare colpevoli che mentono intenzionalmente, aggirando i filtri di sicurezza standard.
+## 🛠️ Architettura del Sistema
 
----
+Il flusso di un turno di gioco segue questo pipeline:
+
+1.  **Input Utente:** Il detective fa una domanda.
+2.  **RAG Retrieval:** Il sistema recupera i ricordi pertinenti dal Vector Store.
+3.  **Prompt Engineering:** Costruzione dinamica del prompt (Persona + Contesto + Obiettivi).
+4.  **Generazione LLM:** Llama 3.2 genera una risposta preliminare.
+5.  **Logic Check (Simbolico):** La risposta viene confrontata con i nodi del **Knowledge Graph**.
+6.  **Correzione (Feedback Loop):** Se viene rilevata un'allucinazione, il sistema rigenera la risposta forzando la coerenza.
 
 ## 🚀 Installazione e Setup
 
 ### Prerequisiti
-* **Python 3.10+** installato.
-* **Ollama** installato e in esecuzione sul computer.
+* Python 3.10 o superiore.
+* [Ollama](https://ollama.com/) installato e in esecuzione.
 
-### 1. Clona la repository
+### 1. Clona il Repository
 ```bash
 git clone [https://github.com/tuo-username/neuro-symbolic-detective.git](https://github.com/tuo-username/neuro-symbolic-detective.git)
 cd neuro-symbolic-detective
-
-```
-
-### 2. Prepara l'ambiente virtuale
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Su Windows: .venv\Scripts\activate
-
-```
-
-### 3. Installa le dipendenze
-
-```bash
-pip install -r requirements.txt
-
-```
-
-*(Assicurati che `requirements.txt` contenga: `ollama`, `pydantic`, `chromadb`, `networkx`, `matplotlib`)*
-
-### 4. Scarica il Modello AI
-
-Il progetto è ottimizzato per **Llama 3.2** (leggero e veloce).
-
-```bash
-ollama pull llama3.2
-
-```
-
----
-
-## 🎮 Come Giocare
-
-Avvia il gioco con il comando:
-
-```bash
-python main.py
-
-```
-
-1. **Generazione:** Il sistema creerà un nuovo caso di omicidio (Vittima, Luogo, 3 Sospettati, Prove).
-2. **Indagine:**
-* Leggi il **Rapporto Forense**.
-* Scegli un sospettato dalla lista basandoti sulla **Pista Iniziale** (Motivo del Fermo).
-* Interrogalo in linguaggio naturale.
-
-
-3. **Verifica:**
-* Quando scrivi `FINE` durante un interrogatorio, un **Analista Forense AI** confronterà la chat con la verità oggettiva e ti dirà se il sospettato ha mentito.
-
-
-4. **Risoluzione:**
-* Quando pensi di aver capito, scegli l'opzione **[A] ACCUSA**.
-* Il sistema rivelerà la **Ground Truth** (Verità Oggettiva) e ti dirà se hai arrestato il vero colpevole.
-
-
-
----
-
-## 📂 Struttura del Codice
-
-Il progetto segue un'architettura modulare per garantire la manutenibilità:
-
-* `main.py`: **Entry Point**. Gestisce l'interfaccia utente (CLI), il loop di gioco e i menu.
-* `GameEngine.py`: **Core Logic**. Gestisce lo stato del gioco, orchestra le chiamate a Ollama, gestisce il ciclo di correzione degli errori e la logica di gioco.
-* `models.py`: **Data Layer**. Definizioni delle classi `Pydantic` per la validazione rigorosa dei dati JSON.
-* `config.py`: **Configuration**. Centralizza le costanti (modello, temperature, percorsi file).
-* `GestoreMemoria.py`: **RAG Module**. Wrapper per ChromaDB.
-* `KnowledgeGraph.py`: **Graph Module**. Wrapper per NetworkX, costruisce la mappa delle relazioni e dei fatti veri.
-
----
-
----
-
-## 📜 Licenza
-
-Progetto sviluppato per scopi accademici/tesi di laurea.
-Distribuito sotto licenza MIT.
-
----
-
-*Powered by [Ollama](https://ollama.ai/) & [Llama 3.2*](https://www.google.com/search?q=https://ai.meta.com/llama/)
-
-```
-
-```

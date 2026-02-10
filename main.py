@@ -3,161 +3,201 @@ from GameEngine import GameEngine
 
 
 def main():
+    """
+    Funzione principale (Entry Point) dell'applicazione.
+    Gestisce il ciclo di vita del gioco: inizializzazione, menu,
+    loop di gioco principale e interazione utente.
+    """
+
+    # Inizializzazione del motore di gioco (GameEngine)
+    # Questo carica le configurazioni e prepara le strutture dati (Grafo, RAG, ecc.)
     engine = GameEngine()
 
+    # Stampa del menu iniziale
     print("1. Nuova Indagine")
     print("2. Carica Salvataggio")
     scelta = input("> ")
 
-    # --- GESTIONE MENU INIZIALE (MODIFICATO) ---
+    # --- GESTIONE MENU INIZIALE ---
+    # Logica per gestire il caricamento di una partita esistente
     if scelta == '2':
-        # 1. Chiediamo all'engine la lista dei file
+        # Recupera la lista dei file JSON dalla cartella dei salvataggi
         saves = engine.elenca_salvataggi()
 
         if not saves:
-            print("\nNessun salvataggio trovato nella cartella 'salvataggi'.")
-            print("Avvio una nuova indagine automatica...")
-            scelta = '1'
+            # Se non ci sono salvataggi, notifica l'utente e passa alla creazione
+            print("\nNessun salvataggio trovato.")
+            print("Avvio nuova indagine...")
+            scelta = '1'  # Fallback a nuova partita
         else:
-            print("\n--- SALVATAGGI DISPONIBILI ---")
+            # Mostra l'elenco dei file disponibili
+            print("\nSALVATAGGI DISPONIBILI")
             for i, file in enumerate(saves):
                 print(f"{i + 1}. {file}")
-            print("0. Indietro / Nuova Partita")
+            print("0. Indietro")
 
             try:
-                idx = int(input("\nScegli il numero del file > "))
+                # Gestione input selezione file
+                idx = int(input("\nScegli file > "))
                 if 1 <= idx <= len(saves):
                     filename_scelto = saves[idx - 1]
                     print(f"Caricamento di '{filename_scelto}'...")
 
+                    # Tenta il caricamento dei dati (JSON -> Oggetti)
                     if engine.carica_partita(filename_scelto):
-                        print("Partita caricata con successo!")
+                        print("Partita caricata.")
                     else:
-                        print("Errore critico nel caricamento del file.")
+                        print("Errore nel caricamento.")
                         return
                 else:
-                    # Se l'utente preme 0 o un numero sbagliato, va a nuova partita
-                    print("Scelta annullata. Avvio nuova indagine...")
-                    scelta = '1'
+                    scelta = '1'  # Se scelta non valida o indietro, nuova partita
             except ValueError:
-                print("Input non valido. Avvio nuova indagine...")
                 scelta = '1'
 
+    # --- GENERAZIONE NUOVA PARTITA ---
+    # Se l'utente ha scelto '1' o se il caricamento è fallito/annullato
     if scelta == '1':
+        # Chiama il metodo che usa l'LLM per generare proceduralmente lo scenario
         if not engine.genera_nuova_partita():
-            print("Errore critico generazione. Verifica che Ollama sia attivo.")
+            print("Errore critico generazione.")
             return
 
     # --- INTRODUZIONE AL CASO ---
+    # Recupera il dizionario dello scenario generato/caricato
     scen = engine.scenario
+
+    # Rimosso spam asterischi - Stampa pulita dei dettagli iniziali
+    print(f"\nCASO: {scen['vittima'].upper()}")
+
+    # Genera e stampa il prologo narrativo (evitando spoiler tramite logica dedicata)
     print(engine.genera_intro_narrativa())
-    print("RAPPORTO FORENSE INIZIALE:")
+
+    print("\nRAPPORTO FORENSE:")
     for f in scen['rapporto_forense']:
         print(f"- {f}")
 
     # --- LOOP PRINCIPALE DEL GIOCO ---
+    # Ciclo infinito che gestisce i turni fino alla risoluzione o all'uscita
     while True:
-        print("\n" + "=" * 50)
-        print("--- LISTA SOSPETTATI & PISTE ---")
+        # Rimosso spam uguali (====)
+        # Mostra la lista dei sospettati e le piste iniziali per guidare il giocatore
+        print("\nSOSPETTATI & PISTE")
         for s in scen['sospettati']:
             print(f"[{s['id']}] {s['nome'].upper()} ({s['ruolo']})")
-            print(f"    ► PISTA INIZIALE: {s['indizio_iniziale']}")
-            print("-" * 40)
+            print(f"    Pista: {s['indizio_iniziale']}")
+            print("")  # Solo uno spazio vuoto invece della linea tratteggiata
 
+        # Opzioni di sistema e di risoluzione
         print("S. Salva ed Esci")
         print("A. ACCUSA E RISOLVI IL CASO")
-        print("=" * 50)
 
         inp = input("> ").upper().strip()
 
-        # --- OPZIONE SALVATAGGIO (MODIFICATO) ---
+        # --- OPZIONE SALVATAGGIO ---
+        # Permette di salvare lo stato attuale (inclusi turni ed eventi) su JSON
         if inp == 'S':
-            print("\nVuoi dare un nome al salvataggio? (Lascia vuoto per data/ora automatica)")
-            nome_user = input("Nome salvataggio: ").strip()
-
-            # Passiamo il nome (o None) all'engine
+            print("\nNome salvataggio (Invio per auto):")
+            nome_user = input("> ").strip()
+            # Chiama il metodo di salvataggio del motore
             msg = engine.salva_partita(nome_user if nome_user else None)
+            print(msg)
+            break  # Esce dal gioco dopo il salvataggio
 
-            print(msg)  # Stampa "Partita salvata in..."
-            print("Arrivederci.")
-            break
-
-        # --- OPZIONE ACCUSA (FINE GIOCO) ---
+        # --- OPZIONE ACCUSA (RISOLUZIONE) ---
+        # Fase finale: il giocatore formula l'ipotesi e il sistema verifica la Ground Truth
         elif inp == 'A':
-            print("\n" + "!" * 40)
-            print("FASE FINALE: FORMULAZIONE ACCUSA")
-            print("!" * 40)
-            print("Chi ritieni sia il colpevole?")
+            # Rimosso spam punti esclamativi
+            print("\nFASE FINALE: ACCUSA")
+            print("Chi è il colpevole?")
 
             try:
-                id_accusa = int(input("Inserisci ID del sospettato > "))
+                id_accusa = int(input("ID sospettato > "))
 
-                # Recuperiamo i dati reali dal JSON (Ground Truth)
+                # Trova l'oggetto sospettato scelto dall'utente
                 sospettato_scelto = next((s for s in scen['sospettati'] if s['id'] == id_accusa), None)
+                # Trova l'oggetto del vero colpevole (Ground Truth)
                 vero_colpevole = next(s for s in scen['sospettati'] if s['colpevole'])
 
                 if not sospettato_scelto:
                     print("ID non valido.")
                     continue
 
-                print(f"\nStai arrestando {sospettato_scelto['nome']}...")
-                time.sleep(1.5)  # Suspense
+                print(f"\nArresto di {sospettato_scelto['nome']} in corso...")
+                time.sleep(1)
 
+                # Verifica logica: Confronta la scelta utente con la verità nel JSON
                 if sospettato_scelto['colpevole']:
-                    print("\nACCUSA FONDATA! HAI RISOLTO IL CASO.")
-                    print(f"L'assassino era davvero {vero_colpevole['nome']}.")
+                    print("\nCASO RISOLTO.")
+                    print(f"L'assassino era {vero_colpevole['nome']}.")
                 else:
-                    print(f"\nERRORE GIUDIZIARIO. {sospettato_scelto['nome']} è INNOCENTE.")
+                    print(f"\nERRORE. {sospettato_scelto['nome']} è INNOCENTE.")
                     print(f"Il vero assassino era {vero_colpevole['nome']}.")
 
-                # Rivelazione della Verità
-                print("\n--- RAPPORTO CONCLUSIVO (GROUND TRUTH) ---")
-                print(f"MOVENTE REALE: {scen['movente_reale']}")
-                print(f"ARMA DEL DELITTO: {scen['arma_reale']}")
-                print(f"ALIBI DEL COLPEVOLE: Era FALSO ({vero_colpevole['alibi']})")
-                print(f"SEGRETO: {vero_colpevole['segreto']}")
+                # Rivela la verità completa (Ground Truth) per confronto
+                print("\nVERITÀ (GROUND TRUTH)")
+                print(f"Movente: {scen['movente_reale']}")
+                print(f"Arma: {scen['arma_reale']}")
+                print(f"Alibi Reale del Killer: FALSO ({vero_colpevole['alibi']})")
+                print(f"Segreto: {vero_colpevole['segreto']}")
 
-                break  # Termina il programma
+                break  # Fine del gioco
 
             except ValueError:
-                print("Devi inserire un numero.")
+                print("Inserire un numero.")
 
         # --- OPZIONE INTERROGATORIO ---
+        # Se l'input è un numero, avvia l'interrogatorio del sospettato corrispondente
         elif inp.isdigit():
             id_s = int(inp)
+            # Verifica range ID (assumendo 3 sospettati: 0, 1, 2)
             if 0 <= id_s < 3:
                 nome_sosp = scen['sospettati'][id_s]['nome']
-                print(f"\n--- INIZIO INTERROGATORIO: {nome_sosp} ---")
-                print(f"(Scrivi 'FINE' per terminare e ricevere il rapporto dell'Analista)")
+                print(f"\nINTERROGATORIO: {nome_sosp}")
+                print("(Scrivi 'FINE' per terminare)")
 
-                history = []
+                history = []  # Memoria locale della conversazione corrente
+
+                # Loop interno di chat con il singolo sospettato
                 while True:
                     d = input("DETECTIVE: ")
 
-                    # --- GENERAZIONE RAPPORTO POLIZIA ---
+                    # Comando per terminare l'interrogatorio e generare il report
                     if d.upper() == 'FINE':
                         if not history:
-                            print("Non hai fatto domande. Nessun rapporto generato.")
                             break
 
-                        print("\n" + "." * 50)
-                        print("La polizia sta esaminando la trascrizione dell'interrogatorio...")
+                        # Rimosso spam puntini (...)
+                        print("\nGenerazione rapporto analista...")
 
-                        # Chiamata alla nuova funzione in GameEngine
+                        # Chiama l'LLM in modalità "Analista" per verificare la coerenza delle risposte
                         rapporto = engine.genera_rapporto_polizia(id_s, history)
 
-                        print("\n--- RAPPORTO PRELIMINARE DI POLIZIA ---")
-                        print(f"SOGGETTO: {nome_sosp.upper()}")
-                        print("-" * 40)
+                        print("\nRAPPORTO POLIZIA")
+                        print(f"Soggetto: {nome_sosp.upper()}")
                         print(rapporto)
-                        print("-" * 40)
-                        input("(Premi Invio per tornare al menu principale)")
+                        input("\n(Premi Invio)")
                         break
 
-                    # --- TURNO DI DIALOGO STANDARD ---
+                    # Elabora la risposta del sospettato:
+                    # 1. Recupero RAG
+                    # 2. Generazione LLM
+                    # 3. Verifica Neuro-Simbolica (Grafo)
                     r = engine.elabora_turno(id_s, d, history)
                     print(f"SOSPETTATO: {r}")
                     history.append(f"D: {d} R: {r}")
+
+                    # Verifica se scatta un colpo di scena (Evento Dinamico)
+                    # Controlla il numero di turni globali e inietta nuovi fatti se necessario
+                    evento = engine.verifica_colpo_scena()
+                    if evento:
+                        print("\n" + "!" * 50)
+                        print("BREAKING NEWS - AGGIORNAMENTO CENTRALE")
+                        print(f"RAPPORTO URGENTE: {evento}")
+                        print("")
+                        print("(Nota: I sospettati sono ora al corrente di questo fatto)")
+
+                        # Piccola pausa per enfasi drammatica
+                        time.sleep(2)
 
 
 if __name__ == "__main__":

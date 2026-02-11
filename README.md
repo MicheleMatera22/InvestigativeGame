@@ -95,9 +95,3 @@ ChromaDB: Vector Database per la memoria RAG.
 
 Pydantic: Validazione e parsing dei dati.
 
-🎓 Contatti e Crediti
-Sviluppato da [Tuo Nome] Dipartimento di Informatica, Università degli Studi di Bari Aldo Moro.
-
-Anno Accademico 2023/2024.
-
-Progetto realizzato a scopo di ricerca per tesi di laurea triennale/magistrale.

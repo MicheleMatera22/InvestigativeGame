@@ -1,5 +1,7 @@
 # GameEngine.py
 import json
+import time
+
 import ollama
 from pydantic import ValidationError
 import os
@@ -8,7 +10,7 @@ from config import Config
 from models import ScenarioInvestigativo
 from GestoreMemoria import MemoriaRAG
 from KnowledgeGraph import KnowledgeGraph
-
+import webbrowser
 
 class GameEngine:
     """
@@ -52,7 +54,7 @@ class GameEngine:
             "arma_reale": "Oggetto",
             "movente_reale": "Motivo",
             "intro_atmosfera": "Meteo e luci",
-            "rapporto_forense": ["Specifica solo l'ora del decesso", "Specifica solo l'ora del ritrovamento del corpo", "Rapporto della scientifica"],
+            "rapporto_forense": ["Scrivi: Ora del decesso: (indica orario)", "Scrivi: Ora del ritrovamento del corpo: (indica orario che deve essere successivo all'ora del decesso", "Rapporto della scientifica"],
             "sospettati": [
                 { "id": 0, "nome": "...", "ruolo": "...", "colpevole": true, "personalita": ""personalita": "Aggettivo forte che definisce come parla (es. Balbuziente, Arrogante, Logorroico, Timido)",", "alibi": "Falso...", "segreto": "...", "indizio_iniziale": "..." },
                 { "id": 1, "nome": "...", "ruolo": "...", "colpevole": false, "personalita": ""personalita": "Aggettivo forte che definisce come parla (es. Balbuziente, Arrogante, Logorroico, Timido)",", "alibi": "Vero...", "segreto": "...", "indizio_iniziale": "..." },
@@ -103,6 +105,7 @@ class GameEngine:
         VITTIMA: {self.scenario['vittima']}
         LUOGO: {self.scenario['luogo_omicidio']}
         ATMOSFERA: {self.scenario['intro_atmosfera']}
+        ARMA DEL DELITTO: {self.scenario['arma_reale']}
         FATTI NOTI: {", ".join(self.scenario['rapporto_forense'])}
         """
 
@@ -230,7 +233,8 @@ class GameEngine:
             1. MENTI sul tuo alibi ({s['alibi']}), ma fallo sembrare credibile.
             2. SVIA IL DISCORSO: Se il detective chiede dell'arma o del movente ({self.scenario['movente_reale']}), diventa vago, difensivo o accusa qualcun altro.
             3. INDIZIO SOTTILE (TELL): Quando menti spudoratamente, aggiungi un piccolo tic comportamentale tra asterischi (es. *si tocca il collo*, *evita lo sguardo*, *ride nervosamente*).
-            4. Non confessare MAI direttamente.
+            4: INDIZIO INIZIALE: Quando il detective svela l'indizio iniziale ({s['indizio_iniziale']}) diventa molto nervoso.
+            5. Non confessare MAI direttamente.
             """
         else:
             psicologia = f"""
@@ -240,7 +244,8 @@ class GameEngine:
             COME COMPORTARTI:
             1. Dì la VERITÀ assoluta sul tuo alibi ({s['alibi']}). Vuoi che la polizia ti scagioni dall'omicidio.
             2. PROTEGGI IL SEGRETO: Se il detective fa domande che si avvicinano al tuo segreto ({s['segreto']}), diventa evasivo, nervoso o arrabbiato. NON rivelarlo a meno che non ti senta alle strette.
-            3. Sii collaborativo sull'omicidio, ma reticente sulla tua vita privata.
+            3. Se il detective svela l'indizio iniziale ({s['indizio-iniziale']}) svela il tuo segreto: {s['segreto']}.
+            4. Sii collaborativo sull'omicidio, ma reticente sulla tua vita privata.
             """
 
         # 3. Assemblaggio finale
@@ -440,18 +445,19 @@ class GameEngine:
 
         # 1. Generazione Creativa del Colpo di Scena
         prompt = f"""
-        Sei uno scrittore di thriller.
+        Sei uno scrittore di gialli.
         Scenario: {self.scenario['vittima']} ucciso a {self.scenario['luogo_omicidio']}.
 
-        Genera una "BREAKING NEWS" (un fatto nuovo improvviso) che complica le indagini.
+        Genera una "BREAKING NEWS" (un fatto nuovo improvviso) che aiuta con le indagini.
         Esempi:
-        - "È stata ritrovata l'arma del delitto in un bidone vicino."
-        - "Un testimone anonimo afferma di aver visto un'auto rossa fuggire."
-        - "L'autopsia rivela una traccia di veleno non notata prima."
+        - "È stata ritrovata l'arma del delitto nella casa di uno dei sospettati."
+        - "Un testimone anonimo afferma di aver visto uno dei sospetti fuggire dal luogo del crimine poco dopo l'ora del decesso."
+        - "L'autopsia rivela le impronte digitali di uno dei sospettati sulla vittima."
+        - "Le impronte digitali del colpevole sono state ritrovate sull'arma dell'omicidio."
 
         REGOLE:
         1. Max 1 frase.
-        2. Deve essere un fatto concreto.
+        2. Deve essere un fatto concreto relative alla storia.
         3. NON rivelare il colpevole, ma aggiungi tensione.
         """
 
@@ -477,3 +483,31 @@ class GameEngine:
         except Exception as e:
             print(f"Errore generazione evento: {e}")
             return None
+
+    def apri_questionario(self):
+        """
+        Mostra il messaggio finale e tenta di aprire il browser automaticamente.
+        """
+        # --- INSERISCI QUI IL TUO LINK VERO ---
+        LINK_QUESTIONARIO = "https://forms.gle/P3xZCQrpmWnRkic97"
+        # --------------------------------------
+
+        print("\n" + "═" * 50)
+        print(" 🎓 GRAZIE PER AVER PARTECIPATO ALLA SPERIMENTAZIONE")
+        print("═" * 50)
+        print(" Il tuo contributo è fondamentale per la mia tesi di laurea.")
+        print(" Ti prego di dedicare 2 minuti per compilare questo questionario")
+        print(" valutando l'esperienza e l'intelligenza artificiale.")
+        print("-" * 50)
+        print(f"\n 👉  {LINK_QUESTIONARIO}  👈\n")
+        print("-" * 50)
+        print("(Sto tentando di aprire il link nel tuo browser...)")
+        time.sleep(5)
+        try:
+            # Tenta di aprire il link nel browser predefinito del sistema
+            webbrowser.open(LINK_QUESTIONARIO)
+        except:
+            pass  # Se fallisce, l'utente ha comunque il link stampato sopra
+
+        # Pausa finale per evitare che la finestra si chiuda subito su Windows
+        input("\nPremi Invio per terminare il programma...")
